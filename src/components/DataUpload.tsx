@@ -20,27 +20,38 @@ export default function DataUpload({
     for (const row of rows) {
       const [sequenceStr, label] = row.split(',', 2);
       try {
-        const sequence: number[][] = eval(
-          sequenceStr.replace('\n', '').replace(' ', ','),
-        ); // Парсим в 2D
+        const sequence: number[][] = JSON.parse(sequenceStr);
         if (sequence.length === 8 && sequence[0].length === 64) {
-          // Преобразуем в 1D для упрощения
           sequences.push(sequence.flat());
           labels.push(Number(label));
+        } else {
+          console.warn('Некорректная форма последовательности:', sequenceStr);
         }
       } catch (e) {
         console.warn('Ошибка парсинга:', row);
       }
     }
+    console.log(
+      'Загруженные sequences:',
+      sequences.length,
+      sequences[0]?.length,
+    );
+    console.log('Пример sequence:', sequences[0]?.slice(0, 10));
     onDataLoaded(sequences, labels);
   };
 
   const loadSampleData = () => {
     // Встроенный датасет: 100 последовательностей 8x64
     const sequences: number[][] = Array.from({ length: 100 }, () =>
-      Array.from({ length: 8 * 64 }, () => Math.random() * 100),
+      Array.from({ length: 8 * 64 }, () => Math.random()),
     );
     const labels: number[] = sequences.map(() => (Math.random() > 0.5 ? 1 : 0));
+    console.log(
+      'Встроенные sequences:',
+      sequences.length,
+      sequences[0]?.length,
+    );
+    console.log('Пример sequence:', sequences[0]?.slice(0, 10));
     onDataLoaded(sequences, labels);
   };
 

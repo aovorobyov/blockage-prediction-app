@@ -2,8 +2,11 @@ import { useState } from 'react';
 import DataUpload from '../components/DataUpload';
 import DataVisualization from '../components/DataVisualization';
 import Prediction from '../components/Prediction';
-import ModelComparison from '../components/ModelComparison';
+import dynamic from 'next/dynamic';
 
+const ModelComparison = dynamic(() => import('../components/ModelComparison'), {
+  ssr: false, // Отключаем SSR
+});
 interface Metrics {
   accuracy: number;
   precision: number;
@@ -14,15 +17,30 @@ interface Metrics {
 export default function Home() {
   const [sequences, setSequences] = useState<number[][]>([]);
   const [labels, setLabels] = useState<number[]>([]);
+  const [prediction, setPrediction] = useState<
+    { [key: string]: number } | undefined
+  >(undefined); // Состояние для предсказания
   const [metrics] = useState<{ [key: string]: Metrics }>({
-    lstm: { accuracy: 0.85, precision: 0.8, recall: 0.82, f1: 0.81 },
-    cnn: { accuracy: 0.87, precision: 0.83, recall: 0.85, f1: 0.84 },
-    'cnn-lstm': { accuracy: 0.9, precision: 0.88, recall: 0.89, f1: 0.88 },
+    lstm: { accuracy: 0.6809, precision: 0.5865, recall: 0.6546, f1: 0.6187 },
+    cnn: { accuracy: 0.6239, precision: 0.5185, recall: 0.6854, f1: 0.5904 },
+    'cnn-lstm': {
+      accuracy: 0.607,
+      precision: 0.5022,
+      recall: 0.7099,
+      f1: 0.5883,
+    },
   });
 
   const handleDataLoaded = (newSequences: number[][], newLabels: number[]) => {
     setSequences(newSequences);
     setLabels(newLabels);
+    // Очищаем предсказание при новой загрузке датасета
+    setPrediction(undefined);
+  };
+
+  // Функция для обновления предсказания из Prediction
+  const updatePrediction = (newPrediction: { [key: string]: number }) => {
+    setPrediction(newPrediction);
   };
 
   return (
@@ -37,8 +55,15 @@ export default function Home() {
         <DataUpload onDataLoaded={handleDataLoaded} />
         {sequences.length > 0 && (
           <>
-            <DataVisualization sequences={sequences} labels={labels} />
-            <Prediction sequences={sequences} />
+            <DataVisualization
+              sequences={sequences}
+              labels={labels}
+              prediction={prediction?.['cnn']} // Передаем предсказание для одной модели (например, cnn)
+            />
+            <Prediction
+              sequences={sequences}
+              updatePrediction={updatePrediction}
+            />
             <ModelComparison metrics={metrics} />
           </>
         )}

@@ -1,8 +1,3 @@
-import { Line } from 'react-chartjs-2';
-import { Chart, registerables } from 'chart.js';
-
-Chart.register(...registerables);
-
 interface Metrics {
   accuracy: number;
   precision: number;
@@ -10,71 +5,63 @@ interface Metrics {
   f1: number;
 }
 
-export default function ModelComparison({
-  metrics,
-}: {
+interface ModelComparisonProps {
   metrics: { [key: string]: Metrics };
-}) {
-  const chartData = {
-    labels: Object.keys(metrics),
-    datasets: [
-      {
-        label: 'Accuracy',
-        data: Object.values(metrics).map((m) => m.accuracy),
-        borderColor: '#0079c1',
-      },
-    ],
-  };
+}
 
+export default function ModelComparison({ metrics }: ModelComparisonProps) {
   return (
-    <div className='comparison'>
+    <div className='model-comparison'>
+      <h3>Сравнение моделей</h3>
       <table>
         <thead>
           <tr>
             <th>Модель</th>
-            <th>Accuracy</th>
-            <th>Precision</th>
-            <th>Recall</th>
-            <th>F1</th>
+            <th>Accuracy (%)</th>
+            <th>Precision (%)</th>
+            <th>Recall (%)</th>
+            <th>F1 Score (%)</th>
           </tr>
         </thead>
         <tbody>
-          {Object.entries(metrics).map(([model, m]) => (
-            <tr key={model}>
-              <td>{model.toUpperCase()}</td>
-              <td>{m.accuracy.toFixed(2)}</td>
-              <td>{m.precision.toFixed(2)}</td>
-              <td>{m.recall.toFixed(2)}</td>
-              <td>{m.f1.toFixed(2)}</td>
+          {Object.entries(metrics).map(([modelName, metric]) => (
+            <tr key={modelName}>
+              <td>{modelName.toUpperCase()}</td>
+              <td>{(metric.accuracy * 100).toFixed(2)}</td>
+              <td>{(metric.precision * 100).toFixed(2)}</td>
+              <td>{(metric.recall * 100).toFixed(2)}</td>
+              <td>{(metric.f1 * 100).toFixed(2)}</td>
             </tr>
           ))}
         </tbody>
       </table>
-      <div className='chart'>
-        <Line data={chartData} />
-      </div>
       <style jsx>{`
-        .comparison {
+        .model-comparison {
           margin-bottom: 20px;
+          padding: 20px;
+          background: #f5f5f5;
+          border-radius: 8px;
         }
         table {
           width: 100%;
           border-collapse: collapse;
-          margin-bottom: 20px;
+          margin-top: 10px;
         }
         th,
         td {
-          border: 1px solid #ddd;
-          padding: 8px;
+          padding: 8px 12px;
           text-align: center;
+          border: 1px solid #ddd;
         }
         th {
-          background-color: #f5f5f5;
+          background-color: #0079c1;
+          color: white;
         }
-        .chart {
-          padding: 20px;
-          background: #f5f5f5;
-          border-radius: 8px;
+        tr:nth-child(even) {
+          background-color: #f9f9f9;
+        }
+        tr:hover {
+          background-color: #e6f0fa;
         }
       `}</style>
     </div>
